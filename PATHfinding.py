@@ -1,6 +1,9 @@
 import pygame # type: ignore
 import sys
 import heapq
+import random
+import subprocess
+import os
 
 # Inicializar Pygame
 pygame.init()
@@ -18,6 +21,7 @@ white = (255, 255, 255)
 gray = (169, 169, 169)
 green = (0, 255, 0)
 red = (255, 0, 0)
+rod = (205, 30, 30)
 yellow = (255, 255, 0)  # Lista abierta
 light_blue = (173, 216, 230)  # Lista cerrada
 purple = (209, 125, 212)  # Camino más corto
@@ -25,7 +29,7 @@ gray = (150, 150, 150)
 text_color = black  # Color del texto
 
 # Dimensiones de cada celda
-cell_size = 90
+cell_size = 45
 
 # Número de filas y columnas
 cols = width // cell_size
@@ -72,6 +76,21 @@ path = []  # Ruta más corta
 font = pygame.font.SysFont(None, 36)
 text_font = pygame.font.SysFont(None, int(cell_size/2.7))  # Fuente para el texto del costo
 text_font_big = pygame.font.SysFont(None, int(cell_size/1.94))  # Fuente para el texto del costo
+# Cargar imagen del obstáculo
+# Cargar varias imágenes de obstáculos y ajustarlas al tamaño de celda
+obstacle_images = []
+for i in range(1, 6):  # si tus archivos son h1.png, h2.png, h3.png, h4.png, h5.png
+    img = pygame.image.load(f"h{i}.png").convert_alpha()
+    img = pygame.transform.scale(img, (cell_size, cell_size))
+    obstacle_images.append(img)
+
+# Inicializar la cuadrícula con todas las celdas libres
+grid = [[FREE for _ in range(rows)] for _ in range(cols)]
+g_score = {}  # Diccionario para almacenar el costo g de cada celda
+h_score = {}  # Diccionario para almacenar el costo h de cada celda
+
+# Diccionario para guardar qué imagen tiene cada obstáculo
+grid_image_map = {}
 
 # Función para dibujar la cuadrícula
 def draw_grid(show_weights=True, show_path=False):
@@ -81,7 +100,13 @@ def draw_grid(show_weights=True, show_path=False):
             if grid[x][y] == FREE:
                 pygame.draw.rect(win, white, rect)
             elif grid[x][y] == OBSTRUCTED:
-                pygame.draw.rect(win, black, rect)
+                if (x, y) in grid_image_map:
+                    win.blit(grid_image_map[(x, y)], rect.topleft)
+                else:
+                    # Si no hay imagen registrada (por seguridad), asigna una aleatoria
+                    img = random.choice(obstacle_images)
+                    grid_image_map[(x, y)] = img
+                    win.blit(img, rect.topleft)
             elif grid[x][y] == START:
                 pygame.draw.rect(win, green, rect)
             elif grid[x][y] == END:
@@ -109,6 +134,8 @@ def draw_grid(show_weights=True, show_path=False):
         
         rectP = pygame.Rect(playerX * cell_size, playerY * cell_size, cell_size, cell_size)
         pygame.draw.rect(win, gray, rectP)
+        rectE = pygame.Rect(start_pos[0] * cell_size, start_pos[1] * cell_size, cell_size, cell_size)
+        pygame.draw.rect(win, rod, rectE)
 
 # Función para calcular la heurística diagonal
 def heuristic(a, b):
@@ -233,7 +260,13 @@ def reset_all_grid():
     grid[start_pos[0]][start_pos[1]] = START
     grid[end_pos[0]][end_pos[1]] = END
     reset_grid()
-
+    
+def open_other_file():
+    pygame.quit()
+    # Cambia 'otro_archivo.py' por el nombre de tu archivo
+    subprocess.Popen([sys.executable, 'hola.py'])
+    sys.exit()
+    
 # Función para dibujar los botones
 def draw_buttons():
     reset_all_button = pygame.Rect(50, height - 50, 120, 40)
@@ -244,19 +277,24 @@ def draw_buttons():
     pygame.draw.rect(win, gray, reset_button)
     win.blit(font.render("Reset", True, black), (210, height - 45))
 
+    # NUEVO BOTÓN
+    open_file_button = pygame.Rect(width - 200, height - 50, 150, 40)
+    pygame.draw.rect(win, gray, open_file_button)
+    win.blit(font.render("Modo VS", True, black), (width - 190, height - 45))
+
     if path_found:
         path_button = pygame.Rect(400, height - 50, 195, 40)
         pygame.draw.rect(win, gray, path_button)
         win.blit(font.render("Ruta más corta", True, black), (410, height - 45))
-        return reset_button, reset_all_button, path_button
+        return reset_button, reset_all_button, path_button, open_file_button
     else:
         step_button = pygame.Rect(400, height - 50, 150, 40)
         pygame.draw.rect(win, gray, step_button)
         win.blit(font.render("Siguiente", True, black), (410, height - 45))
-        return reset_button, reset_all_button, step_button
+        return reset_button, reset_all_button, step_button, open_file_button
 
-playerX = 0
-playerY = 0
+playerX = 10 
+playerY = 10
 while True:
 
     for event in pygame.event.get():
@@ -267,22 +305,30 @@ while True:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                if(playerY > 0):
+                if(playerY > 0 and grid[playerX][playerY-1] != OBSTRUCTED):
                     playerY -= 1
 
             if event.key == pygame.K_DOWN:
-                if(playerY < 7):
+                if(playerY < 16 and grid[playerX][playerY+1] != OBSTRUCTED):
                     playerY +=1
 
             if event.key == pygame.K_RIGHT:
-                if(playerX < 15):
+                if(playerX < 30 and grid[playerX+1][playerY] != OBSTRUCTED):
                     playerX +=1
                 
             if event.key == pygame.K_LEFT:
-                if(playerX > 0):
+                if(playerX > 0 and grid[playerX-1][playerY] != OBSTRUCTED):
                     playerX -=1
-            
+            for a in range(-1,2):
+                for b in range(-1,2):
+                    print(start_pos[0]+a,start_pos[1]+b)
+                    if(grid[start_pos[0]+a][start_pos[1]+b] == PATH):
+                        start_pos = (start_pos[0]+a,start_pos[1]+b)
+                        
+                        break
+
             end_pos = (playerX, playerY)
+
             reset_grid()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -290,12 +336,14 @@ while True:
             grid_x = x // cell_size
             grid_y = y // cell_size
 
-            reset_button, reset_all_button, action_button = draw_buttons()
+            reset_button, reset_all_button, action_button, open_file_button = draw_buttons()
 
             if reset_button.collidepoint(event.pos):
                 reset_grid()
             elif reset_all_button.collidepoint(event.pos):
                 reset_all_grid()
+            elif open_file_button.collidepoint(event.pos):  # NUEVA CONDICIÓN
+                open_other_file()
             elif path_found and action_button.collidepoint(event.pos):
                 for pos in path:
                     if pos != end_pos:
@@ -311,10 +359,32 @@ while True:
             elif (grid_x, grid_y) == end_pos:
                 dragging_end = True
             else:
-                if grid[grid_x][grid_y] == FREE:
-                    grid[grid_x][grid_y] = OBSTRUCTED
-                elif grid[grid_x][grid_y] == OBSTRUCTED:
-                    grid[grid_x][grid_y] = FREE
+                # haber pues el uno es para el click normal
+                if event.button == 1:  # Click izquierdo: obstáculos
+                    if grid[grid_x][grid_y] == FREE:
+                        grid[grid_x][grid_y] = OBSTRUCTED
+                        grid_image_map[(grid_x, grid_y)] = random.choice(obstacle_images)
+                    elif grid[grid_x][grid_y] == OBSTRUCTED:
+                        grid[grid_x][grid_y] = FREE
+                        if (grid_x, grid_y) in grid_image_map:
+                            del grid_image_map[(grid_x, grid_y)]
+                # el dos es para el click de la rueda del raton
+                elif event.button == 2:
+                    if grid[grid_x][grid_y] == START:
+                        grid[grid_x][grid_y] = FREE
+                    elif (grid_x, grid_y) != end_pos:
+                        grid[start_pos[0]][start_pos[1]] = FREE
+                        start_pos = (grid_x, grid_y)
+                        grid[grid_x][grid_y] = START
+
+                # el tres es para el click derecho
+                elif event.button == 3:
+                    if grid[grid_x][grid_y] == END:
+                        grid[grid_x][grid_y] = FREE
+                    elif (grid_x, grid_y) != start_pos:
+                        grid[end_pos[0]][end_pos[1]] = FREE
+                        end_pos = (grid_x, grid_y)
+                        grid[grid_x][grid_y] = END
 
         if event.type == pygame.MOUSEBUTTONUP:
             dragging_start = False
@@ -336,8 +406,9 @@ while True:
                     grid[end_pos[0]][end_pos[1]] = FREE
                     end_pos = (grid_x, grid_y)
                     grid[end_pos[0]][end_pos[1]] = END
-    
-    
+
+
+
     win.fill(white)
 
     if path_found:
