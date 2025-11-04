@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 import sys
 import heapq
 
@@ -21,6 +21,7 @@ red = (255, 0, 0)
 yellow = (255, 255, 0)  # Lista abierta
 light_blue = (173, 216, 230)  # Lista cerrada
 purple = (209, 125, 212)  # Camino más corto
+gray = (150, 150, 150)
 text_color = black  # Color del texto
 
 # Dimensiones de cada celda
@@ -38,6 +39,7 @@ END = 3
 OPEN = 6
 CLOSED = 7
 PATH = 8  # Estado de la celda para el camino más corto
+PLAYER = 9
 
 # Inicializar la cuadrícula con todas las celdas libres
 grid = [[FREE for _ in range(rows)] for _ in range(cols)]
@@ -51,7 +53,6 @@ end_pos = (cols - 1, rows - 1)
 # Asignar la celda de inicio y final
 grid[start_pos[0]][start_pos[1]] = START
 grid[end_pos[0]][end_pos[1]] = END
-
 
 dragging_start = False
 dragging_end = False
@@ -85,10 +86,10 @@ def draw_grid(show_weights=True, show_path=False):
                 pygame.draw.rect(win, green, rect)
             elif grid[x][y] == END:
                 pygame.draw.rect(win, red, rect)
-            elif grid[x][y] == OPEN:
-                pygame.draw.rect(win, yellow, rect)
-            elif grid[x][y] == CLOSED:
-                pygame.draw.rect(win, light_blue, rect)
+            #elif grid[x][y] == OPEN:
+                #pygame.draw.rect(win, yellow, rect)
+            #elif grid[x][y] == CLOSED:
+                #pygame.draw.rect(win, light_blue, rect)
             elif grid[x][y] == PATH:
                 pygame.draw.rect(win, purple, rect)
 
@@ -100,11 +101,14 @@ def draw_grid(show_weights=True, show_path=False):
                     g_rect = g_text.get_rect(topleft=(x * cell_size + 5, y * cell_size + 5))
                     h_rect = h_text.get_rect(topright=(x * cell_size + cell_size - 5, y * cell_size + 5))
                     f_rect = f_text.get_rect(midbottom=(x * cell_size + cell_size // 2, y * cell_size + cell_size - 5))
-                    win.blit(g_text, g_rect)
-                    win.blit(h_text, h_rect)
-                    win.blit(f_text, f_rect)
+                    #win.blit(g_text, g_rect)
+                    #win.blit(h_text, h_rect)
+                    #win.blit(f_text, f_rect)
 
             pygame.draw.rect(win, gray, rect, 1)
+        
+        rectP = pygame.Rect(playerX * cell_size, playerY * cell_size, cell_size, cell_size)
+        pygame.draw.rect(win, gray, rectP)
 
 # Función para calcular la heurística diagonal
 def heuristic(a, b):
@@ -165,7 +169,7 @@ def a_star_step():
         grid[current[0]][current[1]] = CLOSED
 
     current = None
-    next_step = False
+    #next_step = False
     draw_grid()
     pygame.display.flip()
 
@@ -251,12 +255,36 @@ def draw_buttons():
         win.blit(font.render("Siguiente", True, black), (410, height - 45))
         return reset_button, reset_all_button, step_button
 
-
+playerX = 0
+playerY = 0
 while True:
+
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+               pygame.quit()
+               sys.exit()
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                if(playerY > 0):
+                    playerY -= 1
+
+            if event.key == pygame.K_DOWN:
+                if(playerY < 7):
+                    playerY +=1
+
+            if event.key == pygame.K_RIGHT:
+                if(playerX < 15):
+                    playerX +=1
+                
+            if event.key == pygame.K_LEFT:
+                if(playerX > 0):
+                    playerX -=1
+            
+            end_pos = (playerX, playerY)
+            reset_grid()
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
             grid_x = x // cell_size
@@ -308,12 +336,22 @@ while True:
                     grid[end_pos[0]][end_pos[1]] = FREE
                     end_pos = (grid_x, grid_y)
                     grid[end_pos[0]][end_pos[1]] = END
-
-    win.fill(white)
-    draw_grid()
-    draw_buttons()
     
-    if step_by_step and next_step:
-        path = a_star_step()
+    
+    win.fill(white)
 
+    if path_found:
+        for pos in path:
+            if pos != end_pos:
+                grid[pos[0]][pos[1]] = PATH
+        draw_grid(show_weights=False, show_path=False)
+    elif not path_found:
+        if not step_by_step:
+            init_a_star()
+            step_by_step = True
+        next_step = True
+    #draw_grid()
+    draw_buttons()
+    path = a_star_step()
+    #if step_by_step and next_step:
     pygame.display.flip()
