@@ -306,7 +306,7 @@ def botones():
         path_button = pygame.Rect(400, height - 50, 195, 40)
         pygame.draw.rect(win, gray, path_button)
         win.blit(font.render("Ruta más corta", True, black), (410, height - 45))
-        return reset_button, reset_all_button, path_button
+        return reset_button, reset_all_button, path_button, boton_salir
     else:
         step_button = pygame.Rect(400, height - 50, 150, 40)
         pygame.draw.rect(win, gray, step_button)
