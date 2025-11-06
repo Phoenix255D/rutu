@@ -1,5 +1,6 @@
 import pygame
 import sys
+import subprocess
 import heapq
 import math
 
@@ -162,7 +163,11 @@ def heuristic(a, b):
     D1 = 10  # Costo de moverse horizontal o verticalmente
     D2 = 14  # Costo de moverse en diagonal
     return D1 * (dx + dy) + (D2 - 2 * D1) * min(dx, dy)
-
+# Función para volver al menu inicial
+def salirse():
+    pygame.quit()
+    subprocess.Popen([sys.executable, 'inicio.py'])
+    sys.exit()
 # Función para encontrar los vecinos de una celda con sus costos
 def get_neighbors(node):
     neighbors = []
@@ -284,7 +289,7 @@ def reset_all_grid():
     reset_grid()  # También reinicia los datos del algoritmo
 
 # Función para dibujar los botones
-def draw_buttons():
+def botones():
     reset_all_button = pygame.Rect(50, height - 50, 120, 40)
     pygame.draw.rect(win, gray, reset_all_button)
     win.blit(font.render("Reset_all", True, black), (60, height - 45))
@@ -292,6 +297,10 @@ def draw_buttons():
     reset_button = pygame.Rect(200, height - 50, 150, 40)
     pygame.draw.rect(win, gray, reset_button)
     win.blit(font.render("Reset", True, black), (210, height - 45))
+    
+    boton_salir = pygame.Rect(width - 200, height - 50, 150, 40)
+    pygame.draw.rect(win, gray, boton_salir)
+    win.blit(font.render("Volver", True, black), (width - 190, height - 45))
 
     if path_found:
         path_button = pygame.Rect(400, height - 50, 195, 40)
@@ -302,7 +311,7 @@ def draw_buttons():
         step_button = pygame.Rect(400, height - 50, 150, 40)
         pygame.draw.rect(win, gray, step_button)
         win.blit(font.render("Siguiente", True, black), (410, height - 45))
-        return reset_button, reset_all_button, step_button
+        return reset_button, reset_all_button, step_button, boton_salir
 
 while True:
     for event in pygame.event.get():
@@ -314,12 +323,14 @@ while True:
             grid_x = x // cell_size
             grid_y = y // cell_size
 
-            reset_button, reset_all_button, action_button = draw_buttons()
+            reset_button, reset_all_button, action_button, boton_salir = botones()
 
             if reset_button.collidepoint(event.pos):
                 reset_grid()
             elif reset_all_button.collidepoint(event.pos):
                 reset_all_grid()
+            elif boton_salir.collidepoint(event.pos):
+                salirse()
             elif path_found and action_button.collidepoint(event.pos):
                 for pos in path:
                     if pos != end_pos:  # Verifica si la posición no es el nodo final
@@ -363,7 +374,7 @@ while True:
 
     win.fill(white)
     draw_grid()
-    draw_buttons()
+    botones()
     
     if step_by_step and next_step:
         path = a_star_step()  # Ejecutar un paso del algoritmo

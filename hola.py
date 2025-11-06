@@ -8,14 +8,11 @@ import os
 # Inicializar Pygame
 pygame.init()
 
-# Dimensiones de la ventana (el doble de ancho para dos grids)
+# Dimensiones, colores y  tamaños
 width, height = 1350, 700
 win = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Comparación: A* vs Dijkstra")
-
+pygame.display.set_caption("A* vs Dijkstra")
 heuristic_weight = 1
-
-# Colores
 black = (0, 0, 0)
 white = (255, 255, 255)
 gray = (169, 169, 169)
@@ -25,18 +22,10 @@ yellow = (255, 255, 0)
 light_blue = (173, 216, 230)
 purple = (209, 125, 212)
 text_color = black
-
-# Dimensiones de cada celda
 cell_size = 70
-
-# Ancho de cada grid (la mitad de la ventana)
 grid_width = width // 2
-
-# Número de filas y columnas
 cols = grid_width // cell_size
 rows = height // cell_size
-
-# Estados de las celdas
 FREE = 0
 OBSTRUCTED = 1
 START = 2
@@ -45,16 +34,14 @@ OPEN = 6
 CLOSED = 7
 PATH = 8
 
-# Inicializar las cuadrículas (una para cada algoritmo)
+# Inicializar las cuadrículas
 grid_astar = [[FREE for _ in range(rows)] for _ in range(cols)]
 grid_dijkstra = [[FREE for _ in range(rows)] for _ in range(cols)]
 
-# Scores para A*
+# costos
 g_score_astar = {}
 h_score_astar = {}
 f_score_astar = {}
-
-# Scores para Dijkstra
 g_score_dijkstra = {}
 
 # Posiciones de inicio y final
@@ -70,15 +57,13 @@ grid_dijkstra[end_pos[0]][end_pos[1]] = END
 dragging_start = False
 dragging_end = False
 
-# Variables para A*
+# Variables para A* y Dijkstra
 step_by_step_astar = False
 open_set_astar = []
 came_from_astar = {}
 current_astar = None
 path_found_astar = False
 path_astar = []
-
-# Variables para Dijkstra
 step_by_step_dijkstra = False
 open_set_dijkstra = []
 came_from_dijkstra = {}
@@ -86,7 +71,7 @@ current_dijkstra = None
 path_found_dijkstra = False
 path_dijkstra = []
 
-# Crear fuente para los botones y texto
+#  fuente para los botones y texto
 font = pygame.font.SysFont(None, 36)
 font_title = pygame.font.SysFont(None, 48)
 text_font = pygame.font.SysFont(None, int(cell_size/2.7))
@@ -184,7 +169,7 @@ def a_star_step():
     current_astar = None
     return []
 
-# Función para realizar un paso de Dijkstra
+# Aqui esta el flujo de un paso de Dijkstra
 def dijkstra_step():
     global current_dijkstra, path_found_dijkstra, path_dijkstra, step_by_step_dijkstra
 
@@ -204,8 +189,7 @@ def dijkstra_step():
         if neighbor not in g_score_dijkstra or tentative_g_score < g_score_dijkstra[neighbor]:
             came_from_dijkstra[neighbor] = current_dijkstra
             g_score_dijkstra[neighbor] = tentative_g_score
-            
-            # Dijkstra solo usa el costo acumulado (sin heurística)
+           
             heapq.heappush(open_set_dijkstra, (tentative_g_score, neighbor))
 
             if grid_dijkstra[neighbor[0]][neighbor[1]] not in [START, END]:
@@ -229,7 +213,8 @@ def init_a_star():
     path_found_astar = False
     path_astar = []
 
-# Función para inicializar Dijkstra
+# aca se inicializa el dijkstra, todo lo de dijkstra se hizo basandose en codigo ya hecho de internet
+# una de las paginas consultadas: https://docs.python.org/3/library/heapq.html
 def init_dijkstra():
     global open_set_dijkstra, came_from_dijkstra, g_score_dijkstra, current_dijkstra, path_found_dijkstra, path_dijkstra
     open_set_dijkstra = []
@@ -249,7 +234,7 @@ def reconstruct_path(came_from, current):
     path.reverse()
     return path
 
-# Función para reiniciar ambas cuadrículas
+# aca se reinician ambas cuadrículas (odio que python deja de funcionar si esta mal identado, perdi mucho tiempo acomodando lineas)
 def reset_grids():
     global grid_astar, grid_dijkstra, g_score_astar, h_score_astar, g_score_dijkstra
     global step_by_step_astar, step_by_step_dijkstra, path_found_astar, path_found_dijkstra
@@ -292,14 +277,14 @@ def reset_all_grids():
     grid_dijkstra[end_pos[0]][end_pos[1]] = END
     reset_grids()
 
-# Función para abrir otro archivo
-def open_other_file():
+# Función para salirse al menu del inicio
+def salirse():
     pygame.quit()
-    subprocess.Popen([sys.executable, 'PATHfinding.py'])
+    subprocess.Popen([sys.executable, 'inicio.py'])
     sys.exit()
 
-# Función para dibujar los botones
-def draw_buttons():
+# aca se dibujan los botones
+def botones():
     reset_all_button = pygame.Rect(50, height - 50, 120, 40)
     pygame.draw.rect(win, gray, reset_all_button)
     win.blit(font.render("Reset_all", True, black), (60, height - 45))
@@ -312,16 +297,16 @@ def draw_buttons():
     pygame.draw.rect(win, gray, step_button)
     win.blit(font.render("Siguiente", True, black), (410, height - 45))
 
-    open_file_button = pygame.Rect(width - 200, height - 50, 150, 40)
-    pygame.draw.rect(win, gray, open_file_button)
-    win.blit(font.render("Enemigo", True, black), (width - 190, height - 45))
+    boton_salir = pygame.Rect(width - 200, height - 50, 150, 40)
+    pygame.draw.rect(win, gray, boton_salir)
+    win.blit(font.render("Volver", True, black), (width - 190, height - 45))
 
-    return reset_button, reset_all_button, step_button, open_file_button
+    return reset_button, reset_all_button, step_button, boton_salir
 
 # Función para dibujar los títulos
-def draw_titles():
-    astar_title = font_title.render("A* Algorithm", True, black)
-    dijkstra_title = font_title.render("Dijkstra Algorithm", True, black)
+def titulos():
+    astar_title = font_title.render("A*", True, black)
+    dijkstra_title = font_title.render("Dijkstra", True, black)
     
     astar_rect = astar_title.get_rect(center=(grid_width // 2, 20))
     dijkstra_rect = dijkstra_title.get_rect(center=(grid_width + grid_width // 2, 20))
@@ -342,14 +327,14 @@ while running:
             grid_x = x // cell_size
             grid_y = y // cell_size
 
-            reset_button, reset_all_button, step_button, open_file_button = draw_buttons()
+            reset_button, reset_all_button, step_button, boton_salir = botones()
 
             if reset_button.collidepoint(event.pos):
                 reset_grids()
             elif reset_all_button.collidepoint(event.pos):
                 reset_all_grids()
-            elif open_file_button.collidepoint(event.pos):
-                open_other_file()
+            elif boton_salir.collidepoint(event.pos):
+                salirse()
             elif step_button.collidepoint(event.pos):
                 if not step_by_step_astar:
                     init_a_star()
@@ -432,17 +417,11 @@ while running:
 
     win.fill(white)
     
-    # Dibujar línea divisoria
+    # Dibujado de los elementos
     pygame.draw.line(win, black, (grid_width, 0), (grid_width, height), 3)
-    
-    # Dibujar títulos
-    draw_titles()
-    
-    # Dibujar ambas cuadrículas
+    titulos()
     draw_grid(grid_astar, g_score_astar, h_score_astar, offset_x=0)
     draw_grid(grid_dijkstra, g_score_dijkstra, {}, offset_x=grid_width)
-    
-    # Dibujar caminos si están encontrados
     if path_found_astar:
         for pos in path_astar:
             if pos != end_pos:
@@ -453,7 +432,7 @@ while running:
             if pos != end_pos:
                 grid_dijkstra[pos[0]][pos[1]] = PATH
     
-    draw_buttons()
+    botones()
     pygame.display.flip()
 
 pygame.quit()

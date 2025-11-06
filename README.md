@@ -1,43 +1,27 @@
-Visualizador Algoritmo A Estrella (A*)
-=======
+Programa visualizador de A* hecho en python
 
-### Requisitos
-- python 3.12.5
-- pygame 2.6.0 
+Requerimientos: 
 
-### Contenido
-El script "PATHfinding.py" permite observar el funcionamiento del algoritmo de ruta A* en una cuadrícula, el movimiento permitido es hacia 8 direcciones (arriba, abajo, izquierda, derecha y sus 4 diagonales correspondientes), para la heurística se uso la distancia de tipo "Diagonal" 
+python 3.12.5
+pygame 2.6.0
 
-![Distancia][1]
+Contenido:
 
-Antes de observar el algoritmo, se debe ubicar el punto de inicio (cuadro verde) y la meta (cuadro rojo) arrastrandolos en la cuadrícula, además se puede colocar obstáculos al hacer click en la cuadrícula (click de nuevo para borrarlos). Para observar el funcionamiento del algoritmo dar click en el botón de siguiente, y dar click en el botón de ruta más corta para observar dicha ruta. 
-Los costos observados se calculan y ubican en el diagrama de visualización de la siguiente forma:
+El siguiente programa fue realizado usando de base otro proyecto extraido del github: https://github.com/cb3ndev/Visualizador-Algoritmo-A-Estrella
 
-![diagrama1][2]
-![diagrama2][3]
 
-Ejemplo de funcionamiento del Script "PATHfinding.py":
+que se encuentre en el video de: https://youtu.be/hQa9JTtq4Ok?si=KXAXJ-awcLujDxwf
+el cual explica el funcionamiento practico de A* y ademas ejemplifica muy bien como se usa, por lo que la mayoria del funcionamiento del programa
+esta hecho usando su material como base.
 
-![ejemplo1][4]
+El programa inicia corriendo el archivo inicio.py desde la terminal, ya ahí carga un menu con 3 opciones, la primera siendo una pelea de turnos
+del jugador contra la computadora que usa A* para perseguirlo mientras que el jugador debe llegar a un punto destino, el segundo es el modo original
+que venia para visualizar como funciona el algoritmo en encontrar rutas, ligeramente modificado, y el tercero es una version que compara el comportamiento de Dijkstra y A*
+en la busqueda de rutas.
 
-El script "PATHfinding_arrows.py" tiene la misma lógica que el primer script con la única diferencia de que solo muestra los costos F, y permite observar como es que el algoritmo halla la ruta más corta por medio de flechas, las flechas apuntan a su celda "Padre", es decir la celda desde la cuál se hizo el análisis para determinar sus costos según el algoritmo A estrella. 
+Estos funcionan por medio de:
 
-Ejemplo de funcionamiento del Script "PATHfinding_arrows.py":
-
-![ejemplo2][5]
-
-Links (Fuentes)
-------------------------
-- http://theory.stanford.edu/~amitp/GameProgramming/
-- http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html#the-a-star-algorithm
-- http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#a-starx27s-use-of-the-heuristic-
-
-Agradecimientos
-------------------------
-Para realizar el código de este visualizador me inspire en el que se observa en el vídeo de S. Lague (https://www.youtube.com/watch?v=-L-WgKMFuhE) ya que se me hizo muy didáctico. 
-
-[1]: https://raw.githubusercontent.com/cb3ndev/Visualizador-Algoritmo-A-Estrella/refs/heads/main/img/diagonal.jpg
-[2]: https://raw.githubusercontent.com/cb3ndev/Visualizador-Algoritmo-A-Estrella/refs/heads/main/img/diagrama1.JPG
-[3]: https://raw.githubusercontent.com/cb3ndev/Visualizador-Algoritmo-A-Estrella/refs/heads/main/img/diagrama2.JPG
-[4]: https://raw.githubusercontent.com/cb3ndev/Visualizador-Algoritmo-A-Estrella/refs/heads/main/img/ejemplo1.jpg
-[5]: https://raw.githubusercontent.com/cb3ndev/Visualizador-Algoritmo-A-Estrella/refs/heads/main/img/ejemplo2.jpg
+hola.py : comparativa entre Dijkstra y A*
+original.py : modo original de comportamiento con A*
+pelea.py : modo de jugador contra computadora que usa A*
+inicio.py : menu principal
